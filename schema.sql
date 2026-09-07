@@ -1,3 +1,5 @@
+-- HELLO
+
 BEGIN TRANSACTION;
 
 CREATE TABLE PriceSubCategories (
