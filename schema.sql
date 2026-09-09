@@ -1,6 +1,63 @@
--- HELLO
-
 BEGIN TRANSACTION;
+
+CREATE TABLE PropertyServiceTypes (
+  id INT IDENTITY (1, 1),
+  name INT NULL,
+  CONSTRAINT PK_PropertyServiceTypes PRIMARY KEY (id)
+);
+
+CREATE TABLE PropertyServices (
+  id INT IDENTITY (1, 1),
+  property_id INT NOT NULL,
+  service_type_id INT NULL,
+  service_available_date DATETIME2 NULL,
+  service_location NVARCHAR (100) NULL,
+  CONSTRAINT PK_PropertyServices PRIMARY KEY (id)
+);
+
+CREATE TABLE PropertyOverlays (
+  id INT IDENTITY (1, 1),
+  property_id INT NULL,
+  overlay_id INT NULL,
+  CONSTRAINT PK_PropertyOverlays PRIMARY KEY (id)
+);
+
+CREATE TABLE PlanningOverlays (
+  id INT IDENTITY (1, 1),
+  name VARCHAR(100) NULL,
+  council_id INT NULL,
+  CONSTRAINT PK_PlanningOverlays PRIMARY KEY (id)
+);
+
+CREATE TABLE PropertyEncumberanceTypes (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  CONSTRAINT PK_PropertyEncumberanceTypes PRIMARY KEY (id)
+);
+
+CREATE TABLE PropertyEncumberances (
+  id INT IDENTITY (1, 1),
+  property_id INT NULL,
+  type INT NULL,
+  description NVARCHAR (100) NULL,
+  reference NVARCHAR (100) NULL,
+  affected_area NVARCHAR (100) NULL,
+  registered_date DATETIME2 NULL,
+  CONSTRAINT PK_PropertyEncumberances PRIMARY KEY (id)
+);
+
+CREATE TABLE PropertyStatuses (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  is_active BIT NULL,
+  CONSTRAINT PK_PropertyStatuses PRIMARY KEY (id)
+);
+
+CREATE TABLE PropertyPlanTypes (
+  id INT IDENTITY (1, 1),
+  name INT NULL,
+  CONSTRAINT PK_PropertyPlanTypes PRIMARY KEY (id)
+);
 
 CREATE TABLE PriceSubCategories (
   id INT IDENTITY (1, 1),
@@ -290,12 +347,16 @@ CREATE TABLE StatesAUS (
 CREATE TABLE Covenants (
   id INT IDENTITY (1, 1),
   estate_id INT NULL,
+  description NVARCHAR (100) NULL,
+  setback_requirements NVARCHAR (100) NULL,
   CONSTRAINT PK_Covenants PRIMARY KEY (id)
 );
 
 CREATE TABLE Estates (
   id INT IDENTITY (1, 1),
   property_id INT NULL,
+  name NVARCHAR (100) NULL,
+  stage NVARCHAR (100) NULL,
   CONSTRAINT PK_Estates PRIMARY KEY (id)
 );
 
@@ -309,6 +370,28 @@ CREATE TABLE Properties (
   id INT IDENTITY (1, 1),
   suburb_id INT NULL,
   design_id INT NULL,
+  house_number NVARCHAR (100) NULL,
+  lot_number NVARCHAR (100) NULL,
+  plan_type INT NULL,
+  plan_number NVARCHAR (100) NULL,
+  title_reference NVARCHAR (100) NULL,
+  coordinate GEOGRAPHY NULL,
+  street NVARCHAR (100) NULL,
+  area DECIMAL NULL,
+  frontage FLOAT NULL,
+  status INT NULL,
+  registration_date DATETIME2 NULL,
+  slope_height DECIMAL NULL,
+  slope_percentage DECIMAL NULL,
+  high_point_rl DECIMAL NULL,
+  low_point_rl DECIMAL NULL,
+  boundry GEOGRAPHY NULL,
+  demolition_required NVARCHAR (100) NULL,
+  soil_classification_id INT NULL,
+  coastal_area BIT NULL,
+  retaining_required BIT NULL,
+  cut_fill_required BIT NULL,
+  minimum_finished_floor_level DECIMAL NULL,
   CONSTRAINT PK_Properties PRIMARY KEY (id)
 );
 
@@ -489,6 +572,24 @@ CREATE TABLE Jobs (
   property_id INT NULL,
   CONSTRAINT PK_Jobs PRIMARY KEY (id)
 );
+
+ALTER TABLE PropertyServices ADD CONSTRAINT fk_Properties_PropertyServices FOREIGN KEY (property_id) REFERENCES Properties (id);
+
+ALTER TABLE PropertyServices ADD CONSTRAINT fk_PropertyServiceTypes_PropertyServices FOREIGN KEY (service_type_id) REFERENCES PropertyServiceTypes (id);
+
+ALTER TABLE PlanningOverlays ADD CONSTRAINT fk_Councils_PlanningOverlays FOREIGN KEY (council_id) REFERENCES Councils (id);
+
+ALTER TABLE PropertyOverlays ADD CONSTRAINT fk_Properties_PropertyOverlays FOREIGN KEY (property_id) REFERENCES Properties (id);
+
+ALTER TABLE PropertyOverlays ADD CONSTRAINT fk_PlanningOverlays_PropertyOverlays FOREIGN KEY (overlay_id) REFERENCES PlanningOverlays (id);
+
+ALTER TABLE PropertyEncumberances ADD CONSTRAINT fk_PropertyEncumberanceTypes_PropertyEncumberances FOREIGN KEY (type) REFERENCES PropertyEncumberanceTypes (id);
+
+ALTER TABLE PropertyEncumberances ADD CONSTRAINT fk_Properties_PropertyEncumberances FOREIGN KEY (property_id) REFERENCES Properties (id);
+
+ALTER TABLE Properties ADD CONSTRAINT fk_PropertyStatuses_Properties FOREIGN KEY (status) REFERENCES PropertyStatuses (id);
+
+ALTER TABLE Properties ADD CONSTRAINT fk_PropertyPlanTypes_Properties FOREIGN KEY (plan_type) REFERENCES PropertyPlanTypes (id);
 
 ALTER TABLE PriceItems ADD CONSTRAINT fk_PriceSubCategories_PriceItems FOREIGN KEY (sub_category_id) REFERENCES PriceSubCategories (id);
 
