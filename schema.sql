@@ -1,5 +1,24 @@
 BEGIN TRANSACTION;
 
+CREATE TABLE DocumentPlanTypes (
+  id INT IDENTITY (1, 1),
+  name INT NULL,
+  CONSTRAINT PK_DocumentPlanTypes PRIMARY KEY (id)
+);
+
+CREATE TABLE DesignRoofTypes (
+  id INT IDENTITY (1, 1),
+  name INT NULL,
+  CONSTRAINT PK_DesignRoofTypes PRIMARY KEY (id)
+);
+
+CREATE TABLE DesignStatuses (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  is_active BIT NULL,
+  CONSTRAINT PK_DesignStatuses PRIMARY KEY (id)
+);
+
 CREATE TABLE PropertyServiceTypes (
   id INT IDENTITY (1, 1),
   name INT NULL,
@@ -103,6 +122,7 @@ CREATE TABLE BuilderDetails (
 CREATE TABLE DocumentCategories (
   id INT IDENTITY (1, 1),
   name INT NULL,
+  plan_type_id INT NULL,
   CONSTRAINT PK_DocumentCategories PRIMARY KEY (id)
 );
 
@@ -299,6 +319,11 @@ CREATE TABLE Certificates (
 
 CREATE TABLE StandardDocuments (
   id INT IDENTITY (1, 1),
+  created DATETIME2 NULL,
+  modified DATETIME2 NULL,
+  category_id INT NULL,
+  template_url NVARCHAR (100) NULL,
+  category_id INT NULL,
   CONSTRAINT PK_StandardDocuments PRIMARY KEY (id)
 );
 
@@ -322,6 +347,25 @@ CREATE TABLE Allocations (
 CREATE TABLE Designs (
   id INT IDENTITY (1, 1),
   design_type_id INT NULL,
+  name NVARCHAR (100) NULL,
+  description NVARCHAR (100) NULL,
+  status_id INT NULL,
+  version FLOAT NULL,
+  storeys INT NULL,
+  bedrooms INT NULL,
+  bathrooms INT NULL,
+  car_spaces INT NULL,
+  floor_area DECIMAL NULL,
+  internal_area DECIMAL NULL,
+  alfresco_area DECIMAL NULL,
+  parking_area DECIMAL NULL,
+  roof_area DECIMAL NULL,
+  length DECIMAL NULL,
+  width DECIMAL NULL,
+  roof_type_id INT NULL,
+  max_bal_rating NVARCHAR (100) NULL,
+  max_cyclone_rating NVARCHAR (100) NULL,
+  max_noise_level NVARCHAR (100) NULL,
   CONSTRAINT PK_Designs PRIMARY KEY (id)
 );
 
@@ -536,7 +580,7 @@ CREATE TABLE Documents (
   created DATETIME2 NULL,
   modified DATETIME2 NULL,
   title NVARCHAR (100) NULL,
-  location NVARCHAR (100) NULL,
+  location_url NVARCHAR (100) NULL,
   category_id INT NULL,
   CONSTRAINT PK_Documents PRIMARY KEY (id)
 );
@@ -572,6 +616,14 @@ CREATE TABLE Jobs (
   property_id INT NULL,
   CONSTRAINT PK_Jobs PRIMARY KEY (id)
 );
+
+ALTER TABLE DocumentCategories ADD CONSTRAINT fk_DocumentPlanTypes_DocumentCategories FOREIGN KEY (plan_type_id) REFERENCES DocumentPlanTypes (id);
+
+ALTER TABLE Designs ADD CONSTRAINT fk_DesignRoofTypes_Designs FOREIGN KEY (roof_type_id) REFERENCES DesignRoofTypes (id);
+
+ALTER TABLE Designs ADD CONSTRAINT fk_DesignStatuses_Designs FOREIGN KEY (status_id) REFERENCES DesignStatuses (id);
+
+ALTER TABLE StandardDocuments ADD CONSTRAINT fk_DocumentCategories_StandardDocuments FOREIGN KEY (category_id) REFERENCES DocumentCategories (id);
 
 ALTER TABLE PropertyServices ADD CONSTRAINT fk_Properties_PropertyServices FOREIGN KEY (property_id) REFERENCES Properties (id);
 
