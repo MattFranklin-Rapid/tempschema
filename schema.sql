@@ -1,17 +1,36 @@
 BEGIN TRANSACTION;
 
+--Proposed, Pre-Construction, Active, Maintenance, On-Hold, Archive, Completed
+CREATE TABLE JobStatuses (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  is_active BIT NULL,
+  hold_note_id UNIQUEIDENTIFIER NULL,
+  CONSTRAINT PK_JobStatuses PRIMARY KEY (id)
+);
+
+--Draft, Authorised, Submitted, Paid, Void
+CREATE TABLE InvoiceStatuses (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  CONSTRAINT PK_InvoiceStatuses PRIMARY KEY (id)
+);
+
+--FLOOR PLAN, ELEVATIONS, SITE PLAN, ROOF PLAN, ELECTRICAL PLAN, ENGINEERING, SPECIFICATION, 3D RENDER, COLOUR BOARD
 CREATE TABLE DocumentPlanTypes (
   id INT IDENTITY (1, 1),
   name INT NULL,
   CONSTRAINT PK_DocumentPlanTypes PRIMARY KEY (id)
 );
 
+--Gable, Hip, Skillion, Flat, Mansard, Gambrel, Butterfly
 CREATE TABLE DesignRoofTypes (
   id INT IDENTITY (1, 1),
   name INT NULL,
   CONSTRAINT PK_DesignRoofTypes PRIMARY KEY (id)
 );
 
+--Draft, Proposed, Approved, Active, Superseded, Archive
 CREATE TABLE DesignStatuses (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
@@ -19,6 +38,7 @@ CREATE TABLE DesignStatuses (
   CONSTRAINT PK_DesignStatuses PRIMARY KEY (id)
 );
 
+--Electricity, Water, Sewer, Stormwater, Gas, Telecom, NBN, etc
 CREATE TABLE PropertyServiceTypes (
   id INT IDENTITY (1, 1),
   name INT NULL,
@@ -41,6 +61,7 @@ CREATE TABLE PropertyOverlays (
   CONSTRAINT PK_PropertyOverlays PRIMARY KEY (id)
 );
 
+--BAL 10/15/Whatever, Flood, Mining, etc
 CREATE TABLE PlanningOverlays (
   id INT IDENTITY (1, 1),
   name VARCHAR(100) NULL,
@@ -48,6 +69,7 @@ CREATE TABLE PlanningOverlays (
   CONSTRAINT PK_PlanningOverlays PRIMARY KEY (id)
 );
 
+--Mortgage, Statutory Charge, Writ or Court Order, Lien, Easement, Caveat, Covenant, Profit à Prendre
 CREATE TABLE PropertyEncumberanceTypes (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
@@ -65,6 +87,7 @@ CREATE TABLE PropertyEncumberances (
   CONSTRAINT PK_PropertyEncumberances PRIMARY KEY (id)
 );
 
+--New, Active, On Hold, Sold, Archived, etc
 CREATE TABLE PropertyStatuses (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
@@ -72,6 +95,7 @@ CREATE TABLE PropertyStatuses (
   CONSTRAINT PK_PropertyStatuses PRIMARY KEY (id)
 );
 
+--RP, SP, some exotic variants
 CREATE TABLE PropertyPlanTypes (
   id INT IDENTITY (1, 1),
   name INT NULL,
@@ -91,12 +115,14 @@ CREATE TABLE PriceCategory (
   CONSTRAINT PK_PriceCategory PRIMARY KEY (id)
 );
 
+--ea, lm, m2, carton, kg, L, etc
 CREATE TABLE UnitsOfMeasure (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
   CONSTRAINT PK_UnitsOfMeasure PRIMARY KEY (id)
 );
 
+--Recieved, Approved, Estimated, Submitted, Signed, Completed, Archived, Rejected, etc
 CREATE TABLE VariationStatuses (
   id INT IDENTITY (1, 1),
   title NVARCHAR (100) NULL,
@@ -119,6 +145,7 @@ CREATE TABLE BuilderDetails (
   CONSTRAINT PK_BuilderDetails PRIMARY KEY (id)
 );
 
+--Plan, Contract, Certificate, Photo, etc
 CREATE TABLE DocumentCategories (
   id INT IDENTITY (1, 1),
   name INT NULL,
@@ -144,6 +171,7 @@ CREATE TABLE ContactSupplierStaff (
   CONSTRAINT PK_ContactSupplierStaff PRIMARY KEY (contact_supplier_id)
 );
 
+--Active, Archive
 CREATE TABLE ContactStatuses (
   id INT IDENTITY (1, 1),
   title NVARCHAR (100) NULL,
@@ -175,6 +203,8 @@ CREATE TABLE ContracterLiscences (
   CONSTRAINT PK_ContracterLiscences PRIMARY KEY (contact_sub_contractor_id)
 );
 
+--Name: Form 4, Form 8, Form 16, etc
+--Source: Builder, Supplier
 CREATE TABLE CertificateFormTypes (
   id INT IDENTITY (1, 1),
   name VARCHAR(100) NULL,
@@ -183,6 +213,7 @@ CREATE TABLE CertificateFormTypes (
   CONSTRAINT PK_CertificateFormTypes PRIMARY KEY (id)
 );
 
+--Lowset, Hiset, Townhouse, Land Only, etc
 CREATE TABLE DesignTypes (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
@@ -204,6 +235,7 @@ CREATE TABLE Users (
   CONSTRAINT PK_Users PRIMARY KEY (id)
 );
 
+--Line notes are intended to be presented below the estimate line description to provide ad-hoc details such as "colour Sufrmist" or "supply only"
 CREATE TABLE EstimateLines (
   id INT IDENTITY (1, 1),
   estimate_id INT NULL,
@@ -244,6 +276,7 @@ CREATE TABLE ExtensionsOfTime (
   CONSTRAINT PK_ExtensionsOfTime PRIMARY KEY (id)
 );
 
+--Tracking QBCC and other relevant liscences, expiries and who they're for
 CREATE TABLE Liscences (
   id INT IDENTITY (1, 1),
   name INT NULL,
@@ -284,6 +317,7 @@ CREATE TABLE ContactClients (
   CONSTRAINT PK_ContactClients PRIMARY KEY (id)
 );
 
+--Request is expected to be a whole speil of HTML / Text so NVarchar(MAX)
 CREATE TABLE MaintenanceRequests (
   id INT IDENTITY (1, 1),
   job_id INT NULL,
@@ -295,6 +329,7 @@ CREATE TABLE MaintenanceRequests (
   CONSTRAINT PK_MaintenanceRequests PRIMARY KEY (id)
 );
 
+--Rather than having a million links, what if we assembled a dynamic query for "get all notes for this item" via the entity_id and table reference
 CREATE TABLE Notes (
   id UNIQUEIDENTIFIER,
   table NVARCHAR (100) NULL,
@@ -333,6 +368,7 @@ CREATE TABLE StandardCertificates (
   CONSTRAINT PK_StandardCertificates PRIMARY KEY (id)
 );
 
+--Clone fields from 'Designs' into this table
 CREATE TABLE StandardDesigns (
   id INT IDENTITY (1, 1),
   CONSTRAINT PK_StandardDesigns PRIMARY KEY (id)
@@ -410,6 +446,8 @@ CREATE TABLE PropertyAgreements (
   CONSTRAINT PK_PropertyAgreements PRIMARY KEY (id)
 );
 
+--As in physical bits of land, a property as you will
+--https://geocode.information.qld.gov.au/validate
 CREATE TABLE Properties (
   id INT IDENTITY (1, 1),
   suburb_id INT NULL,
@@ -532,22 +570,34 @@ CREATE TABLE SupplierQuotes (
 CREATE TABLE InvoiceLines (
   id INT IDENTITY (1, 1),
   invoice_id INT NULL,
+  description NVARCHAR (100) NULL,
+  value DECIMAL NULL,
+  tax_amount DECIMAL NULL,
   CONSTRAINT PK_InvoiceLines PRIMARY KEY (id)
 );
 
 CREATE TABLE Invoices (
   id INT IDENTITY (1, 1),
-  invoice_id INT NULL,
+  order_id INT NULL,
   value DECIMAL NULL,
   amount_paid DECIMAL NULL,
   issue_date DATETIME2 NULL,
   due_date DATETIME2 NULL,
+  reference NVARCHAR (100) NULL,
+  status_id INT NULL,
   CONSTRAINT PK_Invoices PRIMARY KEY (id)
 );
 
 CREATE TABLE PurchaseOrderLines (
   id INT IDENTITY (1, 1),
   purchase_order_id INT NULL,
+  item_id INT NULL,
+  qty DECIMAL NULL,
+  is_custom BIT NULL,
+  custom_value DECIMAL NULL,
+  custom_description NVARCHAR (100) NULL,
+  custom_tax DECIMAL NULL,
+  line_note NVARCHAR (100) NULL,
   CONSTRAINT PK_PurchaseOrderLines PRIMARY KEY (id)
 );
 
@@ -556,6 +606,12 @@ CREATE TABLE PurchaseOrders (
   activity_id INT NULL,
   supplier_id INT NULL,
   contractor_id INT NULL,
+  order_number NVARCHAR (100) NULL,
+  issue_date DATETIME2 NULL,
+  instructions NVARCHAR (100) NULL,
+  sub_total DECIMAL NULL,
+  tax_total DECIMAL NULL,
+  total DECIMAL NULL,
   CONSTRAINT PK_PurchaseOrders PRIMARY KEY (id)
 );
 
@@ -592,6 +648,7 @@ CREATE TABLE LinkedDocuments (
   CONSTRAINT PK_LinkedDocuments PRIMARY KEY (id)
 );
 
+--Floating the idea of having bit flags that burn in associations so dynamic queries don't need to scrape all tables every damn time
 CREATE TABLE Activities (
   id INT IDENTITY (1, 1),
   author_id INT NULL,
@@ -614,8 +671,17 @@ CREATE TABLE Jobs (
   id INT IDENTITY (1, 1),
   contract_id INT NULL,
   property_id INT NULL,
+  status_id INT NULL,
   CONSTRAINT PK_Jobs PRIMARY KEY (id)
 );
+
+ALTER TABLE JobStatuses ADD CONSTRAINT fk_Notes_JobStatuses FOREIGN KEY (hold_note_id) REFERENCES Notes (id);
+
+ALTER TABLE Jobs ADD CONSTRAINT fk_JobStatuses_Jobs FOREIGN KEY (status_id) REFERENCES JobStatuses (id);
+
+ALTER TABLE PurchaseOrderLines ADD CONSTRAINT fk_PriceItems_PurchaseOrderLines FOREIGN KEY (item_id) REFERENCES PriceItems (id);
+
+ALTER TABLE Invoices ADD CONSTRAINT fk_InvoiceStatuses_Invoices FOREIGN KEY (status_id) REFERENCES InvoiceStatuses (id);
 
 ALTER TABLE DocumentCategories ADD CONSTRAINT fk_DocumentPlanTypes_DocumentCategories FOREIGN KEY (plan_type_id) REFERENCES DocumentPlanTypes (id);
 
@@ -771,7 +837,7 @@ ALTER TABLE InvoiceLines ADD CONSTRAINT fk_Invoices_InvoiceLines FOREIGN KEY (in
 
 ALTER TABLE PurchaseOrderLines ADD CONSTRAINT fk_PurchaseOrders_PurchaseOrderLines FOREIGN KEY (purchase_order_id) REFERENCES PurchaseOrders (id);
 
-ALTER TABLE Invoices ADD CONSTRAINT fk_PurchaseOrders_Invoices FOREIGN KEY (invoice_id) REFERENCES PurchaseOrders (id);
+ALTER TABLE Invoices ADD CONSTRAINT fk_PurchaseOrders_Invoices FOREIGN KEY (order_id) REFERENCES PurchaseOrders (id);
 
 ALTER TABLE PurchaseOrders ADD CONSTRAINT fk_ContactSubContractors_PurchaseOrders FOREIGN KEY (contractor_id) REFERENCES ContactSubContractors (id);
 
