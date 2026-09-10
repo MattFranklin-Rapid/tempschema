@@ -6,7 +6,38 @@
 
 BEGIN TRANSACTION;
 
---Proposed, Pre-Construction, Active, Maintenance, On-Hold, Archive, Completed
+--H1, H2, P, etc
+CREATE TABLE SoilClassifications (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  CONSTRAINT PK_SoilClassifications PRIMARY KEY (id)
+);
+
+--Buyer, Guarentor, Other
+CREATE TABLE ContractClientRoles (
+  id INT IDENTITY (1, 1),
+  name NVARCHAR (100) NULL,
+  CONSTRAINT PK_ContractClientRoles PRIMARY KEY (id)
+);
+
+CREATE TABLE ContractClients (
+  id INT IDENTITY (1, 1),
+  contract_id INT NULL,
+  client_id INT NULL,
+  is_primary BIT NULL,
+  is_guarantor BIT NULL,
+  role_id INT NULL,
+  CONSTRAINT PK_ContractClients PRIMARY KEY (id)
+);
+
+-- Sales, Drafting, Estimating, Pre-Construction, Construction, Practical Completion, Maintenance, Completed, Archived
+CREATE TABLE JobConstructionStages (
+  id INT IDENTITY (1, 1),
+  name INT NULL,
+  CONSTRAINT PK_JobConstructionStages PRIMARY KEY (id)
+);
+
+--Proposed, Active, On-Hold, Archive, Completed, Cancelled
 CREATE TABLE JobStatuses (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
@@ -197,16 +228,16 @@ CREATE TABLE ContactDetails (
   CONSTRAINT PK_ContactDetails PRIMARY KEY (id)
 );
 
-CREATE TABLE SupplierLiscences (
+CREATE TABLE SupplierLicences (
   contact_supplier_id INT IDENTITY (1, 1),
   liscence_id INT NULL,
-  CONSTRAINT PK_SupplierLiscences PRIMARY KEY (contact_supplier_id)
+  CONSTRAINT PK_SupplierLicences PRIMARY KEY (contact_supplier_id)
 );
 
-CREATE TABLE ContracterLiscences (
+CREATE TABLE ContracterLicences (
   contact_sub_contractor_id INT IDENTITY (1, 1),
   liscence_id INT NULL,
-  CONSTRAINT PK_ContracterLiscences PRIMARY KEY (contact_sub_contractor_id)
+  CONSTRAINT PK_ContracterLicences PRIMARY KEY (contact_sub_contractor_id)
 );
 
 --Name: Form 4, Form 8, Form 16, etc
@@ -283,12 +314,12 @@ CREATE TABLE ExtensionsOfTime (
 );
 
 --Tracking QBCC and other relevant liscences, expiries and who they're for
-CREATE TABLE Liscences (
+CREATE TABLE Licences (
   id INT IDENTITY (1, 1),
   name NVARCHAR (100) NULL,
   entered DATETIME2 NULL,
   expires DATETIME2 NULL,
-  CONSTRAINT PK_Liscences PRIMARY KEY (id)
+  CONSTRAINT PK_Licences PRIMARY KEY (id)
 );
 
 CREATE TABLE ContactEmployees (
@@ -364,6 +395,7 @@ CREATE TABLE StandardDocuments (
   modified DATETIME2 NULL,
   category_id INT NULL,
   template_url NVARCHAR (100) NULL,
+  category_id INT NULL,
   CONSTRAINT PK_StandardDocuments PRIMARY KEY (id)
 );
 
@@ -373,7 +405,6 @@ CREATE TABLE StandardCertificates (
   CONSTRAINT PK_StandardCertificates PRIMARY KEY (id)
 );
 
---Clone fields from 'Designs' into this table
 CREATE TABLE StandardDesigns (
   id INT IDENTITY (1, 1),
   CONSTRAINT PK_StandardDesigns PRIMARY KEY (id)
@@ -473,7 +504,7 @@ CREATE TABLE Properties (
   high_point_rl DECIMAL NULL,
   low_point_rl DECIMAL NULL,
   boundry GEOGRAPHY NULL,
-  demolition_required NVARCHAR (100) NULL,
+  demolition_required BIT NULL,
   soil_classification_id INT NULL,
   coastal_area BIT NULL,
   retaining_required BIT NULL,
@@ -485,10 +516,6 @@ CREATE TABLE Properties (
 CREATE TABLE Contracts (
   id INT IDENTITY (1, 1),
   property_id INT NULL,
-  owner_1_id INT NULL,
-  owner_2_id INT NULL,
-  owner_3_id INT NULL,
-  owner_4_id INT NULL,
   contract_date DATETIME2 NULL,
   contract_price_inc DECIMAL NULL,
   contract_price_ex DECIMAL NULL,
@@ -502,10 +529,11 @@ CREATE TABLE Contracts (
   description_of_works NVARCHAR (100) NULL,
   building_period INT NULL,
   commencement_date DATETIME2 NULL,
+  completion_date DATETIME2 NULL,
+  handover_date DATETIME2 NULL,
   late_completion_damages DECIMAL NULL,
   issued_date DATETIME2 NULL,
   signed_date DATETIME2 NULL,
-  field_23 INT NULL,
   CONSTRAINT PK_Contracts PRIMARY KEY (id)
 );
 
@@ -677,8 +705,22 @@ CREATE TABLE Jobs (
   contract_id INT NULL,
   property_id INT NULL,
   status_id INT NULL,
+  stage_id INT NULL,
+  assigned_supervisor_id INT NULL,
   CONSTRAINT PK_Jobs PRIMARY KEY (id)
 );
+
+ALTER TABLE Properties ADD CONSTRAINT fk_SoilClassifications_Properties FOREIGN KEY (soil_classification_id) REFERENCES SoilClassifications (id);
+
+ALTER TABLE ContractClients ADD CONSTRAINT fk_ContactClients_ContractClients FOREIGN KEY (client_id) REFERENCES ContactClients (id);
+
+ALTER TABLE ContractClients ADD CONSTRAINT fk_Contracts_ContractClients FOREIGN KEY (contract_id) REFERENCES Contracts (id);
+
+ALTER TABLE ContractClients ADD CONSTRAINT fk_ContractClientRoles_ContractClients FOREIGN KEY (role_id) REFERENCES ContractClientRoles (id);
+
+ALTER TABLE Jobs ADD CONSTRAINT fk_JobConstructionStages_Jobs FOREIGN KEY (stage_id) REFERENCES JobConstructionStages (id);
+
+ALTER TABLE Jobs ADD CONSTRAINT fk_ContactEmployees_Jobs FOREIGN KEY (assigned_supervisor_id) REFERENCES ContactEmployees (id);
 
 ALTER TABLE JobStatuses ADD CONSTRAINT fk_Notes_JobStatuses FOREIGN KEY (hold_note_id) REFERENCES Notes (id);
 
@@ -726,13 +768,13 @@ ALTER TABLE PriceSubCategories ADD CONSTRAINT fk_PriceCategory_PriceSubCategorie
 
 ALTER TABLE Variations ADD CONSTRAINT fk_VariationStatuses_Variations FOREIGN KEY (status_id) REFERENCES VariationStatuses (id);
 
-ALTER TABLE Variations ADD CONSTRAINT fk_Requested_ContactClients_Variations FOREIGN KEY (requested_by_id) REFERENCES ContactClients (id);
+ALTER TABLE Variations ADD CONSTRAINT fk_ContactClients_Variations FOREIGN KEY (requested_by_id) REFERENCES ContactClients (id);
 
-ALTER TABLE Variations ADD CONSTRAINT fk_Documents_Variations FOREIGN KEY (recieved_variation_document_id) REFERENCES Documents (id);
+ALTER TABLE Variations ADD CONSTRAINT fk_Recieved_Documents_Variations FOREIGN KEY (recieved_variation_document_id) REFERENCES Documents (id);
 
-ALTER TABLE Variations ADD CONSTRAINT fk_Documents_Variations FOREIGN KEY (signed_variation_document_id) REFERENCES Documents (id);
+ALTER TABLE Variations ADD CONSTRAINT fk_Signed_Documents_Variations FOREIGN KEY (signed_variation_document_id) REFERENCES Documents (id);
 
-ALTER TABLE Contracts ADD CONSTRAINT fk_Guarantor_ContactClients_Contracts FOREIGN KEY (owners_guarantor_id) REFERENCES ContactClients (id);
+ALTER TABLE Contracts ADD CONSTRAINT fk_ContactClients_Contracts FOREIGN KEY (owners_guarantor_id) REFERENCES ContactClients (id);
 
 ALTER TABLE Contracts ADD CONSTRAINT fk_ContactSuppliers_Contracts FOREIGN KEY (lending_body_id) REFERENCES ContactSuppliers (id);
 
@@ -766,13 +808,13 @@ ALTER TABLE ContactSuppliers ADD CONSTRAINT fk_ContactDetails_ContactSuppliers F
 
 ALTER TABLE ContactClients ADD CONSTRAINT fk_ContactDetails_ContactClients FOREIGN KEY (details_id) REFERENCES ContactDetails (id);
 
-ALTER TABLE SupplierLiscences ADD CONSTRAINT fk_Liscences_SupplierLiscences FOREIGN KEY (liscence_id) REFERENCES Liscences (id);
+ALTER TABLE SupplierLicences ADD CONSTRAINT fk_Licences_SupplierLicences FOREIGN KEY (liscence_id) REFERENCES Licences (id);
 
-ALTER TABLE ContactSuppliers ADD CONSTRAINT fk_SupplierLiscences_ContactSuppliers FOREIGN KEY (id) REFERENCES SupplierLiscences (contact_supplier_id);
+ALTER TABLE ContactSuppliers ADD CONSTRAINT fk_SupplierLicences_ContactSuppliers FOREIGN KEY (id) REFERENCES SupplierLicences (contact_supplier_id);
 
-ALTER TABLE ContracterLiscences ADD CONSTRAINT fk_Liscences_ContracterLiscences FOREIGN KEY (liscence_id) REFERENCES Liscences (id);
+ALTER TABLE ContracterLicences ADD CONSTRAINT fk_Licences_ContracterLicences FOREIGN KEY (liscence_id) REFERENCES Licences (id);
 
-ALTER TABLE ContactSubContractors ADD CONSTRAINT fk_ContracterLiscences_ContactSubContractors FOREIGN KEY (id) REFERENCES ContracterLiscences (contact_sub_contractor_id);
+ALTER TABLE ContactSubContractors ADD CONSTRAINT fk_ContracterLicences_ContactSubContractors FOREIGN KEY (id) REFERENCES ContracterLicences (contact_sub_contractor_id);
 
 ALTER TABLE Certificates ADD CONSTRAINT fk_Documents_Certificates FOREIGN KEY (document_id) REFERENCES Documents (id);
 
@@ -801,14 +843,6 @@ ALTER TABLE Suburbs ADD CONSTRAINT fk_Councils_Suburbs FOREIGN KEY (council_id) 
 ALTER TABLE Councils ADD CONSTRAINT fk_StatesAUS_Councils FOREIGN KEY (state_id) REFERENCES StatesAUS (id);
 
 ALTER TABLE Properties ADD CONSTRAINT fk_Suburbs_Properties FOREIGN KEY (suburb_id) REFERENCES Suburbs (id);
-
-ALTER TABLE Contracts ADD CONSTRAINT fk_Owner4_ContactClients_Contracts FOREIGN KEY (owner_4_id) REFERENCES ContactClients (id);
-
-ALTER TABLE Contracts ADD CONSTRAINT fk_Owner3_ContactClients_Contracts FOREIGN KEY (owner_3_id) REFERENCES ContactClients (id);
-
-ALTER TABLE Contracts ADD CONSTRAINT fk_Owner2_ContactClients_Contracts FOREIGN KEY (owner_2_id) REFERENCES ContactClients (id);
-
-ALTER TABLE Contracts ADD CONSTRAINT fk_Owner1_ContactClients_Contracts FOREIGN KEY (owner_1_id) REFERENCES ContactClients (id);
 
 ALTER TABLE Contracts ADD CONSTRAINT fk_Properties_Contracts FOREIGN KEY (property_id) REFERENCES Properties (id);
 
